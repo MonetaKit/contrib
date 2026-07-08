@@ -39,6 +39,12 @@ func (a *Adapter) ParseWebhook(payload []byte, signature, secret string) (adapte
 			if ref == "" {
 				ref = ev.MerchantOrderID
 			}
+			// Never emit a partial paid event: adapterkit's invariant is that
+			// paymentRef/amount/currency travel together, and an inbound
+			// payment nobody can reconcile is noise at best.
+			if ref == "" || ev.OrderAmount <= 0 {
+				return adapterkit.WebhookEvent{}, fmt.Errorf("paypay: Transaction COMPLETED without order identifier/amount — refusing to emit a partial paid event")
+			}
 			return adapterkit.WebhookEvent{
 				Type:       "paid",
 				Raw:        raw,

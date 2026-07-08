@@ -7,11 +7,15 @@ import { parseWebhook } from "../src/webhook.ts";
 const doc = JSON.parse(
   readFileSync(new URL("../../vectors/webhooks.json", import.meta.url), "utf8"),
 ) as {
-  vectors: Array<{ name: string; payload: unknown; expect: Record<string, unknown> }>;
+  vectors: Array<{ name: string; payload: unknown; expect?: Record<string, unknown>; expectError?: boolean }>;
 };
 
 for (const v of doc.vectors) {
   test(v.name, () => {
+    if (v.expectError) {
+      assert.throws(() => parseWebhook(JSON.stringify(v.payload)));
+      return;
+    }
     const ev = parseWebhook(JSON.stringify(v.payload));
     // Strip undefined optionals so the comparison matches the vector's
     // omitted fields (mirrors Go's omitempty semantics).

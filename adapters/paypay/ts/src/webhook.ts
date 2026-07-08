@@ -38,14 +38,16 @@ export function parseWebhook(payload: string | Uint8Array, signature?: string, s
     case "Transaction": {
       const raw = `Transaction:${ev.state}`;
       switch (ev.state) {
-        case "COMPLETED":
-          return {
-            type: "paid",
-            raw,
-            paymentRef: ev.order_id || ev.merchant_order_id,
-            amount: ev.order_amount,
-            currency: "jpy",
-          };
+        case "COMPLETED": {
+          const paymentRef = ev.order_id || ev.merchant_order_id;
+          // Never emit a partial paid event: the paid triple travels together.
+          if (!paymentRef || !ev.order_amount || ev.order_amount <= 0) {
+            throw new Error(
+              "paypay: Transaction COMPLETED without order identifier/amount — refusing to emit a partial paid event",
+            );
+          }
+          return { type: "paid", raw, paymentRef, amount: ev.order_amount, currency: "jpy" };
+        }
         case "FAILED":
           return { type: "payment_failed", raw };
         default: // AUTHORIZED, CANCELED, EXPIRED, EXPIRED_USER_CONFIRMATION

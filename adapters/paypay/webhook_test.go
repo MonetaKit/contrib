@@ -16,9 +16,10 @@ func TestWebhookConformance(t *testing.T) {
 	}
 	var doc struct {
 		Vectors []struct {
-			Name    string          `json:"name"`
-			Payload json.RawMessage `json:"payload"`
-			Expect  map[string]any  `json:"expect"`
+			Name        string          `json:"name"`
+			Payload     json.RawMessage `json:"payload"`
+			Expect      map[string]any  `json:"expect"`
+			ExpectError bool            `json:"expectError"`
 		} `json:"vectors"`
 	}
 	if err := json.Unmarshal(b, &doc); err != nil {
@@ -28,6 +29,12 @@ func TestWebhookConformance(t *testing.T) {
 	for _, v := range doc.Vectors {
 		t.Run(v.Name, func(t *testing.T) {
 			ev, err := a.ParseWebhook(v.Payload, "", "")
+			if v.ExpectError {
+				if err == nil {
+					t.Fatalf("want error, got event %+v", ev)
+				}
+				return
+			}
 			if err != nil {
 				t.Fatal(err)
 			}

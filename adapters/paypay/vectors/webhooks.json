@@ -3,38 +3,116 @@
   "vectors": [
     {
       "name": "Transaction COMPLETED -> paid",
-      "payload": { "notification_type": "Transaction", "merchant_id": "m1", "order_id": "04-abc123", "merchant_order_id": "sub_1-1700000000-0", "paid_at": "2026-07-08T12:00:00Z", "order_amount": 1200, "state": "COMPLETED" },
-      "expect": { "type": "paid", "raw": "Transaction:COMPLETED", "paymentRef": "04-abc123", "amount": 1200, "currency": "jpy" }
+      "payload": {
+        "notification_type": "Transaction",
+        "merchant_id": "m1",
+        "order_id": "04-abc123",
+        "merchant_order_id": "sub_1-1700000000-0",
+        "paid_at": "2026-07-08T12:00:00Z",
+        "order_amount": 1200,
+        "state": "COMPLETED"
+      },
+      "expect": {
+        "type": "paid",
+        "raw": "Transaction:COMPLETED",
+        "paymentRef": "04-abc123",
+        "amount": 1200,
+        "currency": "jpy"
+      }
     },
     {
       "name": "Transaction COMPLETED without order_id falls back to merchant_order_id",
-      "payload": { "notification_type": "Transaction", "merchant_order_id": "order-9", "order_amount": 100, "state": "COMPLETED" },
-      "expect": { "type": "paid", "raw": "Transaction:COMPLETED", "paymentRef": "order-9", "amount": 100, "currency": "jpy" }
+      "payload": {
+        "notification_type": "Transaction",
+        "merchant_order_id": "order-9",
+        "order_amount": 100,
+        "state": "COMPLETED"
+      },
+      "expect": {
+        "type": "paid",
+        "raw": "Transaction:COMPLETED",
+        "paymentRef": "order-9",
+        "amount": 100,
+        "currency": "jpy"
+      }
+    },
+    {
+      "name": "Transaction COMPLETED without identifiers -> error (never a partial paid event)",
+      "payload": {
+        "notification_type": "Transaction",
+        "state": "COMPLETED"
+      },
+      "expectError": true
+    },
+    {
+      "name": "Transaction COMPLETED without amount -> error",
+      "payload": {
+        "notification_type": "Transaction",
+        "state": "COMPLETED",
+        "order_id": "04-noamount"
+      },
+      "expectError": true
     },
     {
       "name": "Transaction FAILED -> payment_failed",
-      "payload": { "notification_type": "Transaction", "order_id": "04-dead", "order_amount": 1200, "state": "FAILED" },
-      "expect": { "type": "payment_failed", "raw": "Transaction:FAILED" }
+      "payload": {
+        "notification_type": "Transaction",
+        "order_id": "04-dead",
+        "order_amount": 1200,
+        "state": "FAILED"
+      },
+      "expect": {
+        "type": "payment_failed",
+        "raw": "Transaction:FAILED"
+      }
     },
     {
       "name": "Transaction AUTHORIZED (preauth) -> ignored",
-      "payload": { "notification_type": "Transaction", "order_id": "04-auth", "order_amount": 1200, "state": "AUTHORIZED" },
-      "expect": { "type": "ignored", "raw": "Transaction:AUTHORIZED" }
+      "payload": {
+        "notification_type": "Transaction",
+        "order_id": "04-auth",
+        "order_amount": 1200,
+        "state": "AUTHORIZED"
+      },
+      "expect": {
+        "type": "ignored",
+        "raw": "Transaction:AUTHORIZED"
+      }
     },
     {
       "name": "Transaction EXPIRED -> ignored",
-      "payload": { "notification_type": "Transaction", "order_id": "04-old", "order_amount": 1200, "state": "EXPIRED" },
-      "expect": { "type": "ignored", "raw": "Transaction:EXPIRED" }
+      "payload": {
+        "notification_type": "Transaction",
+        "order_id": "04-old",
+        "order_amount": 1200,
+        "state": "EXPIRED"
+      },
+      "expect": {
+        "type": "ignored",
+        "raw": "Transaction:EXPIRED"
+      }
     },
     {
       "name": "account-link revocation (PayPay's documented spelling) -> canceled",
-      "payload": { "notification_type": "customer.authroization.revoked", "userAuthorizationId": "ua_1" },
-      "expect": { "type": "canceled", "raw": "customer.authroization.revoked", "customer": "ua_1" }
+      "payload": {
+        "notification_type": "customer.authroization.revoked",
+        "userAuthorizationId": "ua_1"
+      },
+      "expect": {
+        "type": "canceled",
+        "raw": "customer.authroization.revoked",
+        "customer": "ua_1"
+      }
     },
     {
       "name": "unknown notification type -> ignored",
-      "payload": { "notification_type": "file.recon_file.created" },
-      "expect": { "type": "ignored", "raw": "file.recon_file.created" }
+      "payload": {
+        "notification_type": "file.recon_file.created"
+      },
+      "expect": {
+        "type": "ignored",
+        "raw": "file.recon_file.created"
+      }
     }
   ]
 }
