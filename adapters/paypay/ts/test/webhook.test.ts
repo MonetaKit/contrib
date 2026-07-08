@@ -28,3 +28,7 @@ test("fails closed when a signature or secret is supplied", () => {
   assert.throws(() => parseWebhook(payload, "sig", undefined));
   assert.throws(() => parseWebhook(payload, undefined, "whsec"));
 });
+
+test("invalid JSON payload -> paypay-prefixed error (Go parity)", () => {
+  assert.throws(() => parseWebhook("not json"), /paypay: webhook payload:/);
+});

@@ -223,6 +223,11 @@ export class PayPayClient {
     } catch {
       throw new Error(`paypay: ${method} ${path} -> ${resp.status}: non-OPA response body`);
     }
+    // JSON without the OPA envelope (a proxy's error JSON, say) would surface
+    // later as a bare TypeError on env.resultInfo.code — same failure, same error.
+    if (typeof env?.resultInfo?.code !== "string") {
+      throw new Error(`paypay: ${method} ${path} -> ${resp.status}: non-OPA response body`);
+    }
     return { status: resp.status, env };
   }
 }

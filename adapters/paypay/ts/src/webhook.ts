@@ -26,7 +26,13 @@ export function parseWebhook(payload: string | Uint8Array, signature?: string, s
     );
   }
   const text = typeof payload === "string" ? payload : new TextDecoder().decode(payload);
-  const ev = JSON.parse(text) as {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    throw new Error(`paypay: webhook payload: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  const ev = parsed as {
     notification_type?: string;
     state?: string;
     order_id?: string;
