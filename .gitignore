@@ -1,0 +1,10 @@
+# build artifacts
+/bin/
+*.test
+
+# local env / credentials (VCR cassettes in testdata/ ARE committed, scrubbed)
+.env
+.env.*
+
+# editor
+.DS_Store

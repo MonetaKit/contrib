@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # go.mod replaces core with ../monetakit until core tags a release,
+      # so check out both repos side by side.
+      - uses: actions/checkout@v4
+        with:
+          path: contrib
+      - uses: actions/checkout@v4
+        with:
+          repository: MonetaKit/monetakit
+          path: monetakit
+          # token needed only while core is private:
+          # token: ${{ secrets.CORE_READ_TOKEN }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: contrib/go.mod
+      - run: make check
+        working-directory: contrib
