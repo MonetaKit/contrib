@@ -1,0 +1,20 @@
+{
+  "name": "@monetakit/paypay",
+  "version": "0.0.0",
+  "description": "PayPay (Japan) client for MonetaKit apps — OPA-Auth signing, QR + continuous-payment charges, webhook normalization. Zero-dependency and edge-native (Web Crypto + fetch); the TS twin of the Go adapter, replaying the same conformance vectors.",
+  "keywords": ["monetakit", "paypay", "payments", "japan", "qr"],
+  "type": "module",
+  "main": "./src/index.ts",
+  "license": "MIT",
+  "publishConfig": { "access": "public" },
+  "files": ["src"],
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "msw": "^2.7.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.10.0"
+  }
+}

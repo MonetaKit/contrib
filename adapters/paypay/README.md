@@ -42,7 +42,9 @@ screen → tap the header 7× → Developer Mode, OTP `1234`).
 ## Tests
 
 - `vectors/gateway.json`, `vectors/webhooks.json` — language-neutral
-  conformance vectors (a TS twin must replay the same files).
+  conformance vectors, replayed by BOTH implementations: the Go tests and
+  the TS twin in `ts/` (`@monetakit/paypay`, MSW-mocked) — the two cannot
+  drift on charge classification, request shape, or webhook normalization.
 - `auth_test.go` — golden signatures generated with PayPay's official node
   SDK; the Go port must match byte for byte.
 - `live_test.go` — opt-in sandbox round-trip: `PAYPAY_LIVE_TEST=1` + the
