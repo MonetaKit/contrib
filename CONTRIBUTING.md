@@ -3,6 +3,8 @@
 ## Ground rules
 
 - One adapter/format per PR.
+- Every PR adds an entry under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md)
+  ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format).
 - This code touches money and payment credentials. Reviews are strict on
   idempotency, error handling, and secret handling — that's the point of
   hosting contrib in the org instead of an awesome-list.
