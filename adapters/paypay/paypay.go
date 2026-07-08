@@ -103,6 +103,10 @@ func (a *Adapter) Capabilities() adapterkit.Capabilities {
 		RecurringEngine: "none", // merchant-triggered continuous payments => self-managed engine
 		HasCatalog:      false,  // no product/price objects; providerIds always unmanaged
 		TieredPricing:   "none",
+		ChargeModes:     []string{"pull", "push"}, // continuous payments + dynamic QR
+		// JPY only. No charge bounds declared yet: the OPA spec caps amount at
+		// 11 digits but documents no universal min/max — don't invent one.
+		Currencies: map[string]adapterkit.CurrencyLimit{"jpy": {}},
 	}
 }
 

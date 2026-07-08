@@ -7,5 +7,12 @@
   "nativeEntitlements": false,
   "apiCreatablePlans": false,
   "tieredPricing": "none",
-  "multiPhase": false
+  "multiPhase": false,
+  "chargeModes": [
+    "pull",
+    "push"
+  ],
+  "currencies": {
+    "jpy": {}
+  }
 }

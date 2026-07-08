@@ -39,6 +39,12 @@ PAYPAY_ENVIRONMENT=sandbox        # default is production
 Sandbox test users pay by scanning with the sandbox PayPay app (sign-in
 screen → tap the header 7× → Developer Mode, OTP `1234`).
 
+## Certification
+
+`certify_test.go` runs core's `adapterkit/certify` battery (fixtures in
+`vectors/certify.json`) — the first adapter certified on the full push+pull
+scenario set (`PSH-01`, `WHK-PAID`, `CUR-REJECT`, `WHK-CLOSED`).
+
 ## Tests
 
 - `vectors/gateway.json`, `vectors/webhooks.json` — language-neutral

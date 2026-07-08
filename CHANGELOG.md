@@ -20,6 +20,10 @@ versions independently.
   edge-native, MSW-tested) replaying the same `vectors/` files as the Go
   adapter; npm workspaces (`adapters/*/ts`) + TS CI job established
   ([#1](https://github.com/MonetaKit/contrib/pull/1)).
+- `adapters/paypay`: certified against core's `adapterkit/certify` battery
+  (v0.0.2) — declares `chargeModes: ["pull", "push"]` and `currencies: {jpy}`;
+  first adapter through the full push+pull scenario set
+  ([#1](https://github.com/MonetaKit/contrib/pull/1)).
 - Repo scaffolding: contribution tiers (core / contrib / community), the
   `adapters/example` skeleton with a capability-drift test, and data-first
   conventions for `invoicing/` and `tax/` formats.
