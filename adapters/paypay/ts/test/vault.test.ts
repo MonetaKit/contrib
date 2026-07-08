@@ -41,6 +41,7 @@ const noExp = (() => {
 
 const rejects: Record<string, string> = {
   "missing exp": noExp,
+  "undecodable signature segment": valid.split(".").slice(0, 2).join(".") + ".!!!not-base64url!!!",
   "tampered claims": `${h}.${forged}.${s}`,
   "alg none": signJWT(KEY, { alg: "none" }, claims()),
   "wrong signing key": signJWT(Buffer.from("wrong-key"), HS256, claims()),

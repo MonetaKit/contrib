@@ -101,3 +101,16 @@ for (const v of doc.vectors) {
     }
   });
 }
+
+test("non-JSON response body -> paypay-prefixed error with status (Go parity)", async () => {
+  server.use(
+    http.post(`${BASE}/v1/subscription/payments`, () =>
+      new HttpResponse("<html>502 Bad Gateway</html>", { status: 502, headers: { "Content-Type": "text/html" } }),
+    ),
+  );
+  const client = createClient({ apiKey: "k", apiSecret: "s", baseUrl: BASE, now: () => 1700000000, nonce: () => "n" });
+  await assert.rejects(
+    client.charge("ua_1", { amount: 100, currency: "jpy" }, { idempotencyKey: "k1" }),
+    /paypay: POST \/v1\/subscription\/payments -> 502: non-OPA response body/,
+  );
+});

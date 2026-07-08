@@ -217,7 +217,12 @@ export class PayPayClient {
     if (this.cfg.merchantId) headers["X-ASSUME-MERCHANT"] = this.cfg.merchantId;
     if (payload) headers["Content-Type"] = "application/json";
     const resp = await this.fetchFn(this.baseUrl + path, { method, headers, body: payload });
-    const env = (await resp.json()) as Envelope;
+    let env: Envelope;
+    try {
+      env = (await resp.json()) as Envelope;
+    } catch {
+      throw new Error(`paypay: ${method} ${path} -> ${resp.status}: non-OPA response body`);
+    }
     return { status: resp.status, env };
   }
 }

@@ -53,8 +53,15 @@ export async function verifyResponseToken(token: string, opts: VerifyOptions): P
   const key = await crypto.subtle.importKey(
     "raw", keyBytes as BufferSource, { name: "HMAC", hash: "SHA-256" }, false, ["verify"],
   );
+  let sigBytes: Uint8Array;
+  try {
+    sigBytes = b64urlDecode(parts[2]);
+  } catch {
+    // An undecodable signature IS a signature mismatch (Go parity).
+    throw new Error("paypay: responseToken signature mismatch");
+  }
   const ok = await crypto.subtle.verify(
-    "HMAC", key, b64urlDecode(parts[2]) as BufferSource, te.encode(`${parts[0]}.${parts[1]}`),
+    "HMAC", key, sigBytes as BufferSource, te.encode(`${parts[0]}.${parts[1]}`),
   );
   if (!ok) throw new Error("paypay: responseToken signature mismatch");
 
