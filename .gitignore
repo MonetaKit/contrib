@@ -1,6 +1,7 @@
 # build artifacts
 /bin/
 *.test
+node_modules/
 
 # local env / credentials (VCR cassettes in testdata/ ARE committed, scrubbed)
 .env
