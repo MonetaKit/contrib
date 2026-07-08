@@ -39,16 +39,15 @@ this later; the contract you implement stays the same.)
 ## Developing
 
 `go.mod` pins core's tagged release (`v0.0.1`, the adapterkit compatibility
-anchor), but while core is a private repo the module proxy can't serve it, so
-a `replace` directive expects a sibling checkout:
+anchor) — a plain `go build` fetches it like any module:
 
 ```bash
-git clone git@github.com:MonetaKit/monetakit.git
 git clone git@github.com:MonetaKit/contrib.git
 cd contrib && make check
 ```
 
-The `replace` goes away when core goes public.
+To develop against unreleased core changes, add a local override (don't
+commit it): `go mod edit -replace github.com/monetakit/monetakit=../monetakit`
 
 ## Contributing
 

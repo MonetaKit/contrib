@@ -9,20 +9,8 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      # go.mod replaces core with ../monetakit until core tags a release,
-      # so check out both repos side by side.
       - uses: actions/checkout@v4
-        with:
-          path: contrib
-      # While core is private, CORE_READ_TOKEN must be a PAT with read access
-      # to MonetaKit/monetakit (the default GITHUB_TOKEN can't see it).
-      - uses: actions/checkout@v4
-        with:
-          repository: MonetaKit/monetakit
-          path: monetakit
-          token: ${{ secrets.CORE_READ_TOKEN || github.token }}
       - uses: actions/setup-go@v5
         with:
-          go-version-file: contrib/go.mod
+          go-version-file: go.mod
       - run: make check
-        working-directory: contrib

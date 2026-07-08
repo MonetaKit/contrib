@@ -17,9 +17,3 @@ require (
 	golang.org/x/text v0.29.0 // indirect
 	golang.org/x/tools v0.45.0 // indirect
 )
-
-// The require above pins the adapterkit compatibility anchor (core's tag).
-// The replace stays while core is a private repo (the module proxy can't
-// serve it): develop with a sibling checkout — git clone both repos into the
-// same parent directory. Drop the replace when core goes public.
-replace github.com/monetakit/monetakit => ../monetakit
