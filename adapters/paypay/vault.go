@@ -86,7 +86,10 @@ func (a *Adapter) verifyResponseToken(token string) (linkClaims, error) {
 	if claims.Audience != a.apiKey {
 		return claims, fmt.Errorf("paypay: responseToken audience mismatch")
 	}
-	if claims.ExpiresAt != 0 && a.now().Unix() >= claims.ExpiresAt {
+	if claims.ExpiresAt == 0 {
+		return claims, fmt.Errorf("paypay: responseToken has no exp claim — non-expiring link tokens are not accepted")
+	}
+	if a.now().Unix() >= claims.ExpiresAt {
 		return claims, fmt.Errorf("paypay: responseToken expired")
 	}
 	return claims, nil

@@ -34,7 +34,13 @@ const valid = signJWT(KEY, HS256, claims());
 const forged = Buffer.from(JSON.stringify(claims({ userAuthorizationId: "ua_ATTACKER" }))).toString("base64url");
 const [h, , s] = valid.split(".");
 
+const noExp = (() => {
+  const { exp: _drop, ...rest } = claims();
+  return signJWT(KEY, HS256, rest);
+})();
+
 const rejects: Record<string, string> = {
+  "missing exp": noExp,
   "tampered claims": `${h}.${forged}.${s}`,
   "alg none": signJWT(KEY, { alg: "none" }, claims()),
   "wrong signing key": signJWT(Buffer.from("wrong-key"), HS256, claims()),

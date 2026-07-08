@@ -73,7 +73,8 @@ export async function verifyResponseToken(token: string, opts: VerifyOptions): P
   if (claims.iss !== "paypay.ne.jp") throw new Error(`paypay: responseToken issuer ${JSON.stringify(claims.iss)} is not paypay.ne.jp`);
   if (claims.aud !== opts.apiKey) throw new Error("paypay: responseToken audience mismatch");
   const now = opts.now ?? (() => Math.floor(Date.now() / 1000));
-  if (claims.exp && now() >= claims.exp) throw new Error("paypay: responseToken expired");
+  if (!claims.exp) throw new Error("paypay: responseToken has no exp claim — non-expiring link tokens are not accepted");
+  if (now() >= claims.exp) throw new Error("paypay: responseToken expired");
   if (claims.result !== "succeeded") throw new Error(`paypay: account link not granted (result ${JSON.stringify(claims.result)})`);
   if (!claims.userAuthorizationId) throw new Error("paypay: responseToken carries no userAuthorizationId");
   return claims.userAuthorizationId;

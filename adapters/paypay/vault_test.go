@@ -60,6 +60,11 @@ func TestVault(t *testing.T) {
 		"alg none":          signJWT(t, key, map[string]any{"alg": "none"}, claims(nil)),
 		"wrong signing key": signJWT(t, []byte("wrong-key"), hs256, claims(nil)),
 		"expired":           signJWT(t, key, hs256, claims(map[string]any{"exp": 1600000000})),
+		"missing exp": func() string {
+			c := claims(nil)
+			delete(c, "exp")
+			return signJWT(t, key, hs256, c)
+		}(),
 		"audience mismatch": signJWT(t, key, hs256, claims(map[string]any{"aud": "someone_else"})),
 		"wrong issuer":      signJWT(t, key, hs256, claims(map[string]any{"iss": "evil.example"})),
 		"user declined":     signJWT(t, key, hs256, claims(map[string]any{"result": "declined"})),
