@@ -11,6 +11,19 @@ versions independently.
 
 ### Added
 
+- `adapters/paypay`: PayPay (Japan) adapter — QR push (`ChargeResult.Action`)
+  + continuous-payment pull, unsigned-webhook normalization (fails closed),
+  responseToken `Vault`; OPA-Auth signing pinned to official-SDK golden
+  vectors and verified against the live sandbox
+  ([#1](https://github.com/MonetaKit/contrib/pull/1)).
+- `adapters/paypay/ts`: `@monetakit/paypay` TS twin (zero-dependency,
+  edge-native, MSW-tested) replaying the same `vectors/` files as the Go
+  adapter; npm workspaces (`adapters/*/ts`) + TS CI job established
+  ([#1](https://github.com/MonetaKit/contrib/pull/1)).
+- `adapters/paypay`: certified against core's `adapterkit/certify` battery
+  (v0.0.2) — declares `chargeModes: ["pull", "push"]` and `currencies: {jpy}`;
+  first adapter through the full push+pull scenario set
+  ([#1](https://github.com/MonetaKit/contrib/pull/1)).
 - Repo scaffolding: contribution tiers (core / contrib / community), the
   `adapters/example` skeleton with a capability-drift test, and data-first
   conventions for `invoicing/` and `tax/` formats.

@@ -1,0 +1,12 @@
+{
+  "name": "monetakit-contrib-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "description": "MonetaKit contrib monorepo — TS twins of the Go adapters live in adapters/*/ts.",
+  "type": "module",
+  "workspaces": ["adapters/*/ts"],
+  "scripts": {
+    "test": "npm test --workspaces",
+    "typecheck": "npm run typecheck --workspaces"
+  }
+}

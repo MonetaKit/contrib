@@ -1,0 +1,48 @@
+{
+  "description": "adapterkit/certify scenario fixtures (see SCENARIOS.md in core). The harness owns the invariants; these supply PayPay's wire shapes. Fixtures mirror vectors/gateway.json and vectors/webhooks.json — certify is the cross-adapter floor, the vector files remain the adapter-specific behavior pins.",
+  "scenarios": [
+    {
+      "id": "CHG-01",
+      "charge": { "token": "ua_1", "amount": 1200, "currency": "jpy", "idempotencyKey": "sub_1-1700000000-0", "description": "sub_1 period 1700000000" },
+      "responses": {
+        "/v1/subscription/payments": { "status": 200, "body": { "resultInfo": { "code": "SUCCESS", "message": "Success", "codeId": "08100001" }, "data": { "paymentId": "pay_ok", "status": "COMPLETED" } } }
+      }
+    },
+    {
+      "id": "CHG-02",
+      "charge": { "token": "ua_1", "amount": 500, "currency": "jpy", "idempotencyKey": "k-async" },
+      "responses": {
+        "/v1/subscription/payments": { "status": 202, "body": { "resultInfo": { "code": "REQUEST_ACCEPTED", "message": "Accepted", "codeId": "08100002" }, "data": { "paymentId": "pay_3", "status": "CREATED" } } }
+      }
+    },
+    {
+      "id": "CHG-03",
+      "charge": { "token": "ua_1", "amount": 99999, "currency": "jpy", "idempotencyKey": "k-decline" },
+      "responses": {
+        "/v1/subscription/payments": { "status": 400, "body": { "resultInfo": { "code": "NO_SUFFICIENT_FUND", "message": "Insufficient balance", "codeId": "08100104" }, "data": null } }
+      }
+    },
+    {
+      "id": "CHG-04",
+      "charge": { "token": "ua_1", "amount": 500, "currency": "jpy", "idempotencyKey": "k-ratelimit" },
+      "responses": {
+        "/v1/subscription/payments": { "status": 429, "body": { "resultInfo": { "code": "RATE_LIMIT", "message": "Too many requests.", "codeId": "08100998" }, "data": null } }
+      }
+    },
+    {
+      "id": "PSH-01",
+      "charge": { "token": "qr", "amount": 100, "currency": "jpy", "idempotencyKey": "order-psh" },
+      "responses": {
+        "/v2/codes": { "status": 201, "body": { "resultInfo": { "code": "SUCCESS", "message": "Success", "codeId": "08100001" }, "data": { "codeId": "04-hzYH0y6Jl3UNfdhl", "url": "https://qr-stg.sandbox.paypay.ne.jp/28180104hzYH0y6Jl3UNfdhl", "merchantPaymentId": "order-psh", "amount": { "amount": 100, "currency": "JPY" }, "codeType": "ORDER_QR", "deeplink": "paypay://payment?link_key=https%3A%2F%2Fqr-stg.sandbox.paypay.ne.jp%2F28180104hzYH0y6Jl3UNfdhl" } } }
+      }
+    },
+    {
+      "id": "WHK-PAID",
+      "webhook": { "payload": { "notification_type": "Transaction", "order_id": "04-abc123", "merchant_order_id": "sub_1-1700000000-0", "order_amount": 1200, "state": "COMPLETED" } }
+    },
+    {
+      "id": "WHK-IGNORED",
+      "webhook": { "payload": { "notification_type": "file.recon_file.created" } }
+    }
+  ]
+}

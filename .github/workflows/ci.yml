@@ -14,3 +14,15 @@ jobs:
         with:
           go-version-file: go.mod
       - run: make check
+
+  ts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ">=22.13 <23" # lockfile deps (@inquirer via msw) require ^22.13
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test

@@ -1,0 +1,141 @@
+{
+  "description": "PayPay charge classification: canned OPA responses -> the neutral ChargeResult. Envelope resultInfo.code drives the split: decline codes (NO_SUFFICIENT_FUND, EXPIRED_USER_AUTHORIZATION_ID, ...) are ChargeResult 'failed' (consumes a dunning attempt); everything else non-2xx is a thrown error (the scheduler's lease-retry path). token 'qr' exercises the push flow: pending + Action{paypay_qr}. Language-neutral: consumed by the Go adapter tests today; a TS twin must replay the same file.",
+  "vectors": [
+    {
+      "name": "continuous COMPLETED -> succeeded (request shape pinned)",
+      "token": "ua_1",
+      "amount": 1200,
+      "currency": "jpy",
+      "idempotencyKey": "sub_1-1700000000-0",
+      "chargeDescription": "sub_1 period 1700000000",
+      "responses": {
+        "/v1/subscription/payments": { "status": 200, "body": { "resultInfo": { "code": "SUCCESS", "message": "Success", "codeId": "08100001" }, "data": { "paymentId": "pay_ok", "status": "COMPLETED", "merchantPaymentId": "sub_1-1700000000-0" } } }
+      },
+      "expect": {
+        "result": { "status": "succeeded", "providerRef": "pay_ok" },
+        "chargeRequest": {
+          "path": "/v1/subscription/payments",
+          "merchantPaymentId": "sub_1-1700000000-0",
+          "userAuthorizationId": "ua_1",
+          "amount": 1200,
+          "currency": "JPY",
+          "orderDescription": "sub_1 period 1700000000"
+        }
+      }
+    },
+    {
+      "name": "engine idempotency key with colons -> deterministic sanitized merchantPaymentId",
+      "token": "ua_1",
+      "amount": 500,
+      "currency": "jpy",
+      "idempotencyKey": "sub_1:1700000000:0",
+      "responses": {
+        "/v1/subscription/payments": { "status": 200, "body": { "resultInfo": { "code": "SUCCESS", "message": "Success", "codeId": "08100001" }, "data": { "paymentId": "pay_2", "status": "COMPLETED" } } }
+      },
+      "expect": {
+        "result": { "status": "succeeded", "providerRef": "pay_2" },
+        "chargeRequest": { "merchantPaymentId": "sub_1-1700000000-0-0ba8c7eca8dcc01c" }
+      }
+    },
+    {
+      "name": "continuous CREATED (async / idempotent replay caveat) -> pending",
+      "token": "ua_1",
+      "amount": 500,
+      "currency": "jpy",
+      "idempotencyKey": "k1",
+      "responses": {
+        "/v1/subscription/payments": { "status": 202, "body": { "resultInfo": { "code": "REQUEST_ACCEPTED", "message": "Accepted", "codeId": "08100002" }, "data": { "paymentId": "pay_3", "status": "CREATED" } } }
+      },
+      "expect": { "result": { "status": "pending", "providerRef": "pay_3" } }
+    },
+    {
+      "name": "insufficient balance -> failed (decline, consumes dunning attempt)",
+      "token": "ua_1",
+      "amount": 99999,
+      "currency": "jpy",
+      "idempotencyKey": "k2",
+      "responses": {
+        "/v1/subscription/payments": { "status": 400, "body": { "resultInfo": { "code": "NO_SUFFICIENT_FUND", "message": "Insufficient balance", "codeId": "08100104" }, "data": null } }
+      },
+      "expect": { "result": { "status": "failed", "providerRef": "" } }
+    },
+    {
+      "name": "revoked/expired account link -> failed (decline; user must re-link)",
+      "token": "ua_gone",
+      "amount": 500,
+      "currency": "jpy",
+      "idempotencyKey": "k3",
+      "responses": {
+        "/v1/subscription/payments": { "status": 401, "body": { "resultInfo": { "code": "EXPIRED_USER_AUTHORIZATION_ID", "message": "Expired user authorization id", "codeId": "08100112" }, "data": null } }
+      },
+      "expect": { "result": { "status": "failed", "providerRef": "" } }
+    },
+    {
+      "name": "rate limit -> error (lease retry, must NOT consume a dunning attempt)",
+      "token": "ua_1",
+      "amount": 500,
+      "currency": "jpy",
+      "idempotencyKey": "k4",
+      "responses": {
+        "/v1/subscription/payments": { "status": 429, "body": { "resultInfo": { "code": "RATE_LIMIT", "message": "Too many requests.", "codeId": "08100998" }, "data": null } }
+      },
+      "expect": { "error": true }
+    },
+    {
+      "name": "service error -> error (lease retry)",
+      "token": "ua_1",
+      "amount": 500,
+      "currency": "jpy",
+      "idempotencyKey": "k5",
+      "responses": {
+        "/v1/subscription/payments": { "status": 500, "body": { "resultInfo": { "code": "SERVICE_ERROR", "message": "Service error", "codeId": "08101000" }, "data": null } }
+      },
+      "expect": { "error": true }
+    },
+    {
+      "name": "qr create -> pending with paypay_qr action (real sandbox shape)",
+      "token": "qr",
+      "amount": 100,
+      "currency": "jpy",
+      "idempotencyKey": "order-1",
+      "responses": {
+        "/v2/codes": { "status": 201, "body": { "resultInfo": { "code": "SUCCESS", "message": "Success", "codeId": "08100001" }, "data": { "codeId": "04-hzYH0y6Jl3UNfdhl", "url": "https://qr-stg.sandbox.paypay.ne.jp/28180104hzYH0y6Jl3UNfdhl", "expiryDate": 1783535706, "merchantPaymentId": "order-1", "amount": { "amount": 100, "currency": "JPY" }, "codeType": "ORDER_QR", "deeplink": "paypay://payment?link_key=https%3A%2F%2Fqr-stg.sandbox.paypay.ne.jp%2F28180104hzYH0y6Jl3UNfdhl" } } }
+      },
+      "expect": {
+        "result": { "status": "pending", "providerRef": "04-hzYH0y6Jl3UNfdhl" },
+        "action": { "type": "paypay_qr", "value": "https://qr-stg.sandbox.paypay.ne.jp/28180104hzYH0y6Jl3UNfdhl" },
+        "chargeRequest": { "path": "/v2/codes", "merchantPaymentId": "order-1", "amount": 100, "currency": "JPY" }
+      }
+    },
+    {
+      "name": "qr duplicate merchantPaymentId -> falls back to payment details (no replay on /v2/codes)",
+      "token": "qr",
+      "amount": 100,
+      "currency": "jpy",
+      "idempotencyKey": "order-1",
+      "responses": {
+        "/v2/codes": { "status": 400, "body": { "resultInfo": { "code": "DUPLICATE_DYNAMIC_QR_REQUEST", "message": "Duplicate Dynamic QR request error", "codeId": "08100031" }, "data": null } },
+        "/v2/codes/payments/order-1": { "status": 200, "body": { "resultInfo": { "code": "SUCCESS", "message": "Success", "codeId": "08100001" }, "data": { "paymentId": "pay_qr_1", "status": "COMPLETED" } } }
+      },
+      "expect": { "result": { "status": "succeeded", "providerRef": "pay_qr_1" } }
+    },
+    {
+      "name": "non-JPY currency -> error before any API call",
+      "token": "ua_1",
+      "amount": 500,
+      "currency": "usd",
+      "idempotencyKey": "k6",
+      "responses": {},
+      "expect": { "error": true, "noChargeCall": true }
+    },
+    {
+      "name": "missing idempotency key -> error before any API call",
+      "token": "ua_1",
+      "amount": 500,
+      "currency": "jpy",
+      "idempotencyKey": "",
+      "responses": {},
+      "expect": { "error": true, "noChargeCall": true }
+    }
+  ]
+}

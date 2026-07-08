@@ -1,0 +1,18 @@
+{
+  "displayName": "PayPay",
+  "recurringEngine": "none",
+  "hasCatalog": false,
+  "immutablePrices": false,
+  "usageMetering": false,
+  "nativeEntitlements": false,
+  "apiCreatablePlans": false,
+  "tieredPricing": "none",
+  "multiPhase": false,
+  "chargeModes": [
+    "pull",
+    "push"
+  ],
+  "currencies": {
+    "jpy": {}
+  }
+}

@@ -14,8 +14,8 @@ github.com/hashicorp/hcl/v2 v2.24.0 h1:2QJdZ454DSsYGoaE6QheQZjtKZSUs9Nh2izTWiwQx
 github.com/hashicorp/hcl/v2 v2.24.0/go.mod h1:oGoO1FIQYfn/AgyOhlg9qLC6/nOJPX3qGbkZpYAcqfM=
 github.com/mitchellh/go-wordwrap v1.0.1 h1:TLuKupo69TCn6TQSyGxwI1EblZZEsQ0vMlAFQflz0v0=
 github.com/mitchellh/go-wordwrap v1.0.1/go.mod h1:R62XHJLzvMFRBbcrT7m7WgmE1eOyTSsCt+hzestvNj0=
-github.com/monetakit/monetakit v0.0.1 h1:RBgYIts3Ups32I0Uj6pxFSo1ThLOBEr+/yepMlhRQ54=
-github.com/monetakit/monetakit v0.0.1/go.mod h1:kGM9dbXxwjXKpMyKZy0aNV7RCknmKQ6i5MIub2BXG0c=
+github.com/monetakit/monetakit v0.0.2 h1:LNTt1kIAH4ztmBBroeicQ+jRRu+BhkhFcVKbVoaL6ZI=
+github.com/monetakit/monetakit v0.0.2/go.mod h1:kGM9dbXxwjXKpMyKZy0aNV7RCknmKQ6i5MIub2BXG0c=
 github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 h1:KRzFb2m7YtdldCEkzs6KqmJw4nqEVZGK7IN2kJkjTuQ=
 github.com/santhosh-tekuri/jsonschema/v6 v6.0.2/go.mod h1:JXeL+ps8p7/KNMjDQk3TCwPpBy0wYklyWTfbkIzdIFU=
 github.com/tmccombs/hcl2json v0.6.9 h1:Pvqe6XgLQ8WxuQWp/QPRmV+8uHvUIuCs5b+Q8jvbrdc=

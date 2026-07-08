@@ -2,7 +2,7 @@ module github.com/monetakit/contrib
 
 go 1.26
 
-require github.com/monetakit/monetakit v0.0.1
+require github.com/monetakit/monetakit v0.0.2
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
