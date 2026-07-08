@@ -6,7 +6,7 @@
 //   - Pull (off-session): Charge with token = a userAuthorizationId obtained
 //     from PayPay's account-link flow charges the linked wallet via
 //     POST /v1/subscription/payments — the gateway primitive the self-managed
-//     engine (planfiled) bills subscription periods with.
+//     engine (the planfiled daemon) bills subscription periods with.
 //   - Push (QR): Charge with token = "qr" creates a dynamic QR code
 //     (POST /v2/codes) and returns Status "pending" with the payment URL in
 //     ChargeResult.Action; settlement arrives by webhook / polling.
