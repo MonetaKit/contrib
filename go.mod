@@ -2,7 +2,7 @@ module github.com/monetakit/contrib
 
 go 1.26
 
-require github.com/monetakit/monetakit v0.0.0
+require github.com/monetakit/monetakit v0.0.1
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
@@ -18,7 +18,8 @@ require (
 	golang.org/x/tools v0.45.0 // indirect
 )
 
-// Core has no tagged release yet. Until it does, develop with a sibling
-// checkout (git clone both repos into the same parent directory).
-// Once core tags v0.x, drop this replace and pin the require above.
+// The require above pins the adapterkit compatibility anchor (core's tag).
+// The replace stays while core is a private repo (the module proxy can't
+// serve it): develop with a sibling checkout — git clone both repos into the
+// same parent directory. Drop the replace when core goes public.
 replace github.com/monetakit/monetakit => ../monetakit

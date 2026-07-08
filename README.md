@@ -38,8 +38,9 @@ this later; the contract you implement stays the same.)
 
 ## Developing
 
-Core has no tagged release yet, so this repo uses a `replace` directive that
-expects a sibling checkout:
+`go.mod` pins core's tagged release (`v0.0.1`, the adapterkit compatibility
+anchor), but while core is a private repo the module proxy can't serve it, so
+a `replace` directive expects a sibling checkout:
 
 ```bash
 git clone git@github.com:MonetaKit/monetakit.git
@@ -47,7 +48,7 @@ git clone git@github.com:MonetaKit/contrib.git
 cd contrib && make check
 ```
 
-Once core tags `v0.x`, the `replace` goes away and `go.mod` pins a version.
+The `replace` goes away when core goes public.
 
 ## Contributing
 
