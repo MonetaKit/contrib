@@ -31,6 +31,9 @@ versions independently.
 
 ### Changed
 
+- README and CONTRIBUTING rewritten around the shipped reality: the
+  declare → enforce → certify quality model, PSP-major layout with TS twins
+  and shared vectors, the pre-PR checklist, and versioning/release policy.
 - Pinned core `v0.0.1` as the adapterkit compatibility anchor and dropped the
   sibling-checkout `replace` once core went public.
 - CI runs on current action majors (checkout v7, setup-go v6).
