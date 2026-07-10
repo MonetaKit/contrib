@@ -1,0 +1,140 @@
+{
+  "description": "Omise webhook normalization: an (UNSIGNED) event body -> the neutral WebhookEvent. Omise sends no signature, so this pins normalization only — consumers must confirm by API lookup (GET /charges/{id}) before fulfilling. charge.complete with data.status successful becomes a one-time 'paid' event (paymentRef/amount/currency set together, per the adapterkit invariant). Language-neutral: a TS twin must replay the same file.",
+  "vectors": [
+    {
+      "name": "charge.complete successful -> paid",
+      "payload": {
+        "object": "event",
+        "id": "evnt_1",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_1", "status": "successful", "amount": 10000, "currency": "THB" }
+      },
+      "expect": {
+        "type": "paid",
+        "raw": "charge.complete",
+        "paymentRef": "chrg_1",
+        "amount": 10000,
+        "currency": "thb"
+      }
+    },
+    {
+      "name": "charge.complete successful without amount -> error (never a partial paid event)",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_noamt", "status": "successful", "currency": "thb" }
+      },
+      "expectError": true
+    },
+    {
+      "name": "charge.complete failed -> payment_failed",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_dead", "status": "failed", "amount": 10000, "currency": "thb" }
+      },
+      "expect": { "type": "payment_failed", "raw": "charge.complete" }
+    },
+    {
+      "name": "charge.complete expired -> payment_failed",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_exp", "status": "expired", "amount": 10000, "currency": "thb" }
+      },
+      "expect": { "type": "payment_failed", "raw": "charge.complete" }
+    },
+    {
+      "name": "charge.complete reversed -> payment_failed",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_rev", "status": "reversed", "amount": 10000, "currency": "thb" }
+      },
+      "expect": { "type": "payment_failed", "raw": "charge.complete" }
+    },
+    {
+      "name": "successful missing id -> error (never a partial paid event)",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "status": "successful", "amount": 10000, "currency": "thb" }
+      },
+      "expectError": true
+    },
+    {
+      "name": "successful missing currency -> error",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_nocur", "status": "successful", "amount": 10000 }
+      },
+      "expectError": true
+    },
+    {
+      "name": "successful with amount as a string -> error (type-strict; Go/TS twin must both reject, not coerce)",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_s", "status": "successful", "amount": "10000", "currency": "thb" }
+      },
+      "expectError": true
+    },
+    {
+      "name": "successful negative amount -> error",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_neg", "status": "successful", "amount": -100, "currency": "thb" }
+      },
+      "expectError": true
+    },
+    {
+      "name": "charge.complete still pending (QR issued, awaiting scan) -> ignored",
+      "payload": {
+        "object": "event",
+        "key": "charge.complete",
+        "data": { "object": "charge", "id": "chrg_p", "status": "pending", "amount": 10000, "currency": "thb" }
+      },
+      "expect": { "type": "ignored", "raw": "charge.complete" }
+    },
+    {
+      "name": "real nested Omise charge body -> paid, extra fields ignored",
+      "payload": {
+        "object": "event",
+        "id": "evnt_x",
+        "livemode": false,
+        "key": "charge.complete",
+        "created_at": "2026-07-09T00:00:00Z",
+        "data": { "object": "charge", "id": "chrg_real", "status": "successful", "amount": 10000, "currency": "thb", "paid": true, "paid_at": "2026-07-09T00:00:01Z", "source": { "object": "source", "type": "promptpay", "scannable_code": { "object": "barcode", "type": "qr" } }, "metadata": { "order_id": "A-1" }, "fee": 214, "net": 9786 }
+      },
+      "expect": { "type": "paid", "raw": "charge.complete", "paymentRef": "chrg_real", "amount": 10000, "currency": "thb" }
+    },
+    {
+      "name": "event with no key falls back to object as raw -> ignored (never paid without the key, even if status is successful)",
+      "payload": {
+        "object": "event",
+        "data": { "object": "charge", "id": "chrg_q", "status": "successful", "amount": 10000, "currency": "thb" }
+      },
+      "expect": { "type": "ignored", "raw": "event" }
+    },
+    {
+      "name": "charge.create (QR issued, not yet paid) -> ignored",
+      "payload": {
+        "object": "event",
+        "key": "charge.create",
+        "data": { "object": "charge", "id": "chrg_new", "status": "pending" }
+      },
+      "expect": { "type": "ignored", "raw": "charge.create" }
+    },
+    {
+      "name": "unknown event key -> ignored",
+      "payload": {
+        "object": "event",
+        "key": "refund.create",
+        "data": { "object": "refund", "id": "rfnd_1" }
+      },
+      "expect": { "type": "ignored", "raw": "refund.create" }
+    }
+  ]
+}

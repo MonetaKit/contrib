@@ -11,6 +11,13 @@ versions independently.
 
 ### Added
 
+- `adapters/omise`: Omise / Opn Payments adapter scoped to the **PromptPay**
+  push rail (Thailand) — THB charge → `pending` + `promptpay_qr`
+  `ChargeResult.Action`, `charge.complete` webhook normalization (unsigned;
+  fails closed, confirm by API lookup). Declares `chargeModes: ["push"]` and
+  `currencies: {thb}`; gateway + webhook vectors and the `adapterkit/certify`
+  battery replay offline. Live-sandbox run and PromptPay charge-bound
+  declaration still TODO (see the adapter README).
 - `adapters/paypay`: PayPay (Japan) adapter — QR push (`ChargeResult.Action`)
   + continuous-payment pull, unsigned-webhook normalization (fails closed),
   responseToken `Vault`; OPA-Auth signing pinned to official-SDK golden
