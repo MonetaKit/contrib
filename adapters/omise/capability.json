@@ -1,0 +1,17 @@
+{
+  "displayName": "Omise",
+  "recurringEngine": "none",
+  "hasCatalog": false,
+  "immutablePrices": false,
+  "usageMetering": false,
+  "nativeEntitlements": false,
+  "apiCreatablePlans": false,
+  "tieredPricing": "none",
+  "multiPhase": false,
+  "chargeModes": [
+    "push"
+  ],
+  "currencies": {
+    "thb": { "min": 2000 }
+  }
+}

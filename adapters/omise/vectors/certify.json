@@ -1,0 +1,75 @@
+{
+  "description": "adapterkit/certify scenario fixtures (see SCENARIOS.md in core). The harness owns the invariants; these supply Omise's wire shapes. Omise is push-only (PromptPay), so the charge scenario is a QR push; CUR-REJECT and WHK-CLOSED are derived from the declared capabilities and need no fixture. Fixtures mirror vectors/gateway.json and vectors/webhooks.json.",
+  "scenarios": [
+    {
+      "id": "CHG-01",
+      "charge": { "token": "", "amount": 10000, "currency": "thb", "idempotencyKey": "k-ok" },
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_ok", "status": "successful", "amount": 10000, "currency": "thb" } }
+      }
+    },
+    {
+      "id": "CHG-03",
+      "charge": { "token": "", "amount": 10000, "currency": "thb", "idempotencyKey": "k-decline" },
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_fail", "status": "failed", "failure_code": "insufficient_fund", "amount": 10000, "currency": "thb" } }
+      }
+    },
+    {
+      "id": "CHG-04",
+      "charge": { "token": "", "amount": 10000, "currency": "thb", "idempotencyKey": "k-retry" },
+      "responses": {
+        "/charges": { "status": 429, "body": { "object": "error", "code": "too_many_requests", "message": "rate limit exceeded" } }
+      }
+    },
+    {
+      "id": "PSH-01",
+      "charge": { "token": "", "amount": 10000, "currency": "thb", "idempotencyKey": "order-psh", "description": "certify push" },
+      "responses": {
+        "/charges": {
+          "status": 200,
+          "body": {
+            "object": "charge",
+            "id": "chrg_test_psh01",
+            "status": "pending",
+            "amount": 10000,
+            "currency": "thb",
+            "source": {
+              "object": "source",
+              "type": "promptpay",
+              "scannable_code": {
+                "object": "barcode",
+                "type": "qr",
+                "image": {
+                  "object": "document",
+                  "download_uri": "https://api.omise.co/charges/chrg_test_psh01/documents/docu_x/downloads/dl_x"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "WHK-PAID",
+      "webhook": {
+        "payload": {
+          "object": "event",
+          "id": "evnt_test_paid",
+          "key": "charge.complete",
+          "data": { "object": "charge", "id": "chrg_test_psh01", "status": "successful", "amount": 10000, "currency": "thb" }
+        }
+      }
+    },
+    {
+      "id": "WHK-IGNORED",
+      "webhook": {
+        "payload": {
+          "object": "event",
+          "key": "charge.create",
+          "data": { "object": "charge", "id": "chrg_test_psh01", "status": "pending" }
+        }
+      }
+    }
+  ]
+}

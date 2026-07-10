@@ -1,0 +1,164 @@
+{
+  "description": "Omise PromptPay charge classification: canned charge responses -> the neutral ChargeResult. A pending charge carries the scannable QR (Action{promptpay_qr}); charge.status successful/failed map to succeeded/failed (a business decline consumes a dunning attempt); an Omise error object (non-2xx) is a thrown transport error (the scheduler's lease-retry path). Requests are form-encoded (amount/currency/source[type]) with the idempotency key in the Idempotency-Key header. Language-neutral: a TS twin must replay the same file.",
+  "vectors": [
+    {
+      "name": "promptpay pending -> pending with promptpay_qr action (request shape pinned)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "sub_1-1700000000-0",
+      "chargeDescription": "sub_1 period 1700000000",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_test_1", "status": "pending", "amount": 10000, "currency": "thb", "source": { "object": "source", "type": "promptpay", "scannable_code": { "object": "barcode", "type": "qr", "image": { "object": "document", "download_uri": "https://api.omise.co/charges/chrg_test_1/documents/docu_1/downloads/dl_1" } } } } }
+      },
+      "expect": {
+        "result": { "status": "pending", "providerRef": "chrg_test_1" },
+        "action": { "type": "promptpay_qr", "value": "https://api.omise.co/charges/chrg_test_1/documents/docu_1/downloads/dl_1" },
+        "chargeRequest": {
+          "path": "/charges",
+          "amount": "10000",
+          "currency": "thb",
+          "source[type]": "promptpay",
+          "description": "sub_1 period 1700000000",
+          "idempotencyKey": "sub_1-1700000000-0"
+        }
+      }
+    },
+    {
+      "name": "charge already successful -> succeeded",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-ok",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_ok", "status": "successful", "amount": 10000, "currency": "thb" } }
+      },
+      "expect": { "result": { "status": "succeeded", "providerRef": "chrg_ok" } }
+    },
+    {
+      "name": "charge failed -> failed (decline, consumes dunning attempt)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-fail",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_fail", "status": "failed", "failure_code": "insufficient_fund", "amount": 10000, "currency": "thb" } }
+      },
+      "expect": { "result": { "status": "failed", "providerRef": "chrg_fail" } }
+    },
+    {
+      "name": "omise error object -> error (lease retry, must NOT consume a dunning attempt)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-err",
+      "responses": {
+        "/charges": { "status": 400, "body": { "object": "error", "code": "invalid_charge", "message": "amount must be at least 2000 satang" } }
+      },
+      "expect": { "error": true }
+    },
+    {
+      "name": "pending without scannable_code -> error (cannot present a QR)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-noqr",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_noqr", "status": "pending", "amount": 10000, "currency": "thb", "source": { "object": "source", "type": "promptpay" } } }
+      },
+      "expect": { "error": true }
+    },
+    {
+      "name": "description with special chars is form-encoded safely (no injection into amount/source params)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-special",
+      "chargeDescription": "order #9 & café\nsource[type]=card",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_desc", "status": "successful", "amount": 10000, "currency": "thb" } }
+      },
+      "expect": {
+        "result": { "status": "succeeded", "providerRef": "chrg_desc" },
+        "chargeRequest": {
+          "description": "order #9 & café\nsource[type]=card",
+          "source[type]": "promptpay"
+        }
+      }
+    },
+    {
+      "name": "charge expired -> failed (payer never scanned; the common PromptPay terminal state)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-expired",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_exp", "status": "expired", "amount": 10000, "currency": "thb" } }
+      },
+      "expect": { "result": { "status": "failed", "providerRef": "chrg_exp" } }
+    },
+    {
+      "name": "charge reversed -> failed",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-rev",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_rev", "status": "reversed", "amount": 10000, "currency": "thb" } }
+      },
+      "expect": { "result": { "status": "failed", "providerRef": "chrg_rev" } }
+    },
+    {
+      "name": "unknown charge status -> error (fail-safe; scheduler lease-retries, never a silent succeed/decline)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-unknown",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_x", "status": "reversing", "amount": 10000, "currency": "thb" } }
+      },
+      "expect": { "error": true }
+    },
+    {
+      "name": "engine idempotency key with colons passes through VERBATIM (never sanitized; Omise dedups on it only on versions that honor the header)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "sub_1:1700000000:0",
+      "responses": {
+        "/charges": { "status": 200, "body": { "object": "charge", "id": "chrg_colon", "status": "pending", "amount": 10000, "currency": "thb", "source": { "object": "source", "type": "promptpay", "scannable_code": { "type": "qr", "image": { "download_uri": "https://api.omise.co/q" } } } } }
+      },
+      "expect": {
+        "result": { "status": "pending", "providerRef": "chrg_colon" },
+        "action": { "type": "promptpay_qr", "value": "https://api.omise.co/q" },
+        "chargeRequest": { "idempotencyKey": "sub_1:1700000000:0" }
+      }
+    },
+    {
+      "name": "429 rate limit -> error (lease-retry, not dunning; pinned in the cross-language vector file too)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-429",
+      "responses": {
+        "/charges": { "status": 429, "body": { "object": "error", "code": "too_many_requests", "message": "rate limit exceeded" } }
+      },
+      "expect": { "error": true }
+    },
+    {
+      "name": "503 service unavailable -> error (transport class, not a decline)",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "k-503",
+      "responses": {
+        "/charges": { "status": 503, "body": { "object": "error", "code": "service_unavailable", "message": "temporarily unavailable" } }
+      },
+      "expect": { "error": true }
+    },
+    {
+      "name": "non-THB currency -> error before any API call",
+      "amount": 500,
+      "currency": "jpy",
+      "idempotencyKey": "k-cur",
+      "responses": {},
+      "expect": { "error": true, "noChargeCall": true }
+    },
+    {
+      "name": "missing idempotency key -> error before any API call",
+      "amount": 10000,
+      "currency": "thb",
+      "idempotencyKey": "",
+      "responses": {},
+      "expect": { "error": true, "noChargeCall": true }
+    }
+  ]
+}
